@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(this);
-        String userId = Integer.toString(BiasedRandom.dateBiasedUserId(1000));
+        String userId = Integer.toString(BiasedRandom.dateBiasedUserId(5000));
         Log.i("User id: " + userId);
         analytics.setUserId(userId);
 
