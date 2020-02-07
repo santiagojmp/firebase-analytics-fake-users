@@ -28,13 +28,15 @@ import static com.demo.firebase.model.Section.RECOMMENDATION;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int NUMBER_OF_USERS = 10_000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(this);
-        String userId = Integer.toString(BiasedRandom.dateBiasedUserId(5000));
+        String userId = Integer.toString(BiasedRandom.dateBiasedUserId(NUMBER_OF_USERS));
         Log.i("User id: " + userId);
         analytics.setUserId(userId);
 
