@@ -1,21 +1,26 @@
 package com.demo.firebase
 
-import androidx.test.espresso.Espresso
+import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.filters.LargeTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import com.demo.firebase.view.MainActivity
-import com.demo.firebase.view.ProductListAdapter
 import com.demo.firebase.view.ProductListAdapter.ProductHolder
+import org.hamcrest.Matcher
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.lang.Thread.sleep
+
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -45,11 +50,34 @@ class BuyTest {
         onView(withText("ADD TO CART")).perform(click())
         log("Added to cart")
         onView(withText("View Cart")).perform(click())
-        if (Math.random() > 0.7) return
 
-        onView(withText("PROCEED TO CHECKOUT")).perform(click())
+        val limit = when (getText(withId(R.id.checkout_btn))) {
+            "PAY PLEASE"            -> 0.6
+            "PROCEED TO CHECKOUT"   -> 0.7
+            "BUY"                   -> 0.8
+            else                    -> 0.9
+        }
+
+        if (Math.random() > limit) return
+
+        onView(withId(R.id.checkout_btn)).perform(click())
         onView(withText("CONTINUE SHOPPING")).check(matches(isDisplayed()))
 
+    }
+
+    private fun getText(matcher: Matcher<View>): String {
+        var text = "EMPTY"
+        onView(matcher).perform(object : ViewAction {
+            override fun getConstraints() = isAssignableFrom(TextView::class.java)
+
+            override fun getDescription() = "getting text from a TextView"
+
+            override fun perform(uiController: UiController?, view: View) {
+                val tv = view as TextView //Save, because of check in getConstraints()
+                text = tv.text.toString()
+            }
+        })
+        return text
     }
 
     private fun randomOf(id1: Int, id2: Int) = if (Math.random() > 0.5) id1 else id2
