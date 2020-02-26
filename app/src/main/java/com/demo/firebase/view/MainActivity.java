@@ -28,7 +28,7 @@ import static com.demo.firebase.model.Section.RECOMMENDATION;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int NUMBER_OF_USERS = 10_000;
+    public static final int NUMBER_OF_USERS = 20_000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
