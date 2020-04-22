@@ -36,6 +36,7 @@ class BuyTest {
     @Test
     fun listGoesOverTheFold() {
         log("New test")
+
         onView(withId(randomOf(R.id.seeall_just, R.id.seeall_new)))
                 .perform(click())
         if (Math.random() > 0.9) return
@@ -44,12 +45,14 @@ class BuyTest {
         log("Clicking item $itemToClick")
         onView(withId(R.id.section_product_list))
                 .perform(actionOnItemAtPosition<ProductHolder>(itemToClick, click()))
-        if (Math.random() > 0.7) return
+//        if (Math.random() > 0.7) return // temporary disabled to have more data in A/B testing
 
 //        Espresso.pressBack()
         onView(withText("ADD TO CART")).perform(click())
         log("Added to cart")
         onView(withText("View Cart")).perform(click())
+
+        sleep(2000) // to make sure RemoteConfig is fetched
 
         val limit = when (getText(withId(R.id.checkout_btn))) {
             "PAY PLEASE"            -> 0.6

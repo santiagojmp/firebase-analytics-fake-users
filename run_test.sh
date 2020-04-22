@@ -20,12 +20,6 @@ done
 # running tests
 for ((i=1; i<=$1; i++)); do
     echo "Running test number $i at $(date +"%T")"
-#    ./gradlew connectedAndroidTest --console plain | grep -e "InstrumentationResultParser: OK" -e "BUILD"
-    java -jar spoon-runner-1.7.1-jar-with-dependencies.jar \
-        --apk app/build/outputs/apk/debug/app-debug.apk \
-        --test-apk app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-        --adb-timeout 120 \
-        --fail-if-no-device-connected \
-        --no-animations
+    ./gradlew connectedAndroidTest --console plain | grep -e "InstrumentationResultParser: OK" -e "BUILD"
 
 done

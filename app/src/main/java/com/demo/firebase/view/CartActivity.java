@@ -15,6 +15,11 @@ import com.demo.firebase.R;
 import com.demo.firebase.StoreApplication;
 import com.demo.firebase.model.Cart;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CartActivity extends AppCompatActivity {
 
@@ -34,7 +39,32 @@ public class CartActivity extends AppCompatActivity {
             LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             view.setLayoutManager(layoutManager);
             view.setAdapter(new CartItemAdapter());
+
+
+            Button button = findViewById(R.id.checkout_btn);
+            FirebaseRemoteConfig config = FirebaseRemoteConfig.getInstance();
+            config.setDefaultsAsync(new HashMap<String, Object>(){{
+                put("button_label", "button label");
+            }});
+            config.fetchAndActivate().addOnCompleteListener(task -> {
+                StoreApplication.logEvent("remote_config_activated", new Bundle());
+                logRemoteConfigValues(config);
+                String buttonText = config.getString("button_label");
+                button.setText(buttonText);
+            });
         }
+    }
+
+    private void logRemoteConfigValues(FirebaseRemoteConfig config) {
+        Bundle bundle = new Bundle();
+        for (Map.Entry<String, FirebaseRemoteConfigValue> entry : config.getAll().entrySet()) {
+            bundle.putString(entry.getKey(), entry.getValue().asString());
+        }
+        StoreApplication.logEvent("remote_config", bundle);
+
+        Bundle justOneParam = new Bundle();
+        justOneParam.putString("button_label", config.getString("button_label"));
+        StoreApplication.logEvent("remote_config_directly", justOneParam);
     }
 
 
