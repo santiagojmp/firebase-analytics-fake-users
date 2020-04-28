@@ -34,7 +34,6 @@ public class SectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_section);
 
-
         TextView title = findViewById(R.id.title);
         try {
             Section section = Section.valueOf(getSectionFromIntent());

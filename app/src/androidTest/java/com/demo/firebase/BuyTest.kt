@@ -45,14 +45,14 @@ class BuyTest {
         log("Clicking item $itemToClick")
         onView(withId(R.id.section_product_list))
                 .perform(actionOnItemAtPosition<ProductHolder>(itemToClick, click()))
-//        if (Math.random() > 0.7) return // temporary disabled to have more data in A/B testing
+        if (Math.random() > 0.7) return
 
 //        Espresso.pressBack()
         onView(withText("ADD TO CART")).perform(click())
         log("Added to cart")
         onView(withText("View Cart")).perform(click())
 
-        sleep(2000) // to make sure RemoteConfig is fetched
+        sleep(1000) // to make sure RemoteConfig is fetched
 
         val limit = when (getText(withId(R.id.checkout_btn))) {
             "PAY PLEASE"            -> 0.6

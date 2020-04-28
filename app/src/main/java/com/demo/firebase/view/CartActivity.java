@@ -14,14 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.demo.firebase.R;
 import com.demo.firebase.StoreApplication;
 import com.demo.firebase.model.Cart;
+import com.demo.firebase.model.Product;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 public class CartActivity extends AppCompatActivity {
+
+    public static final String RC_BUTTON_KEY = "button_label";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,51 +43,46 @@ public class CartActivity extends AppCompatActivity {
             view.setLayoutManager(layoutManager);
             view.setAdapter(new CartItemAdapter());
 
-
-            Button button = findViewById(R.id.checkout_btn);
-            FirebaseRemoteConfig config = FirebaseRemoteConfig.getInstance();
-            config.setDefaultsAsync(new HashMap<String, Object>(){{
-                put("button_label", "button label");
-            }});
-            config.fetchAndActivate().addOnCompleteListener(task -> {
-                StoreApplication.logEvent("remote_config_activated", new Bundle());
-                logRemoteConfigValues(config);
-                String buttonText = config.getString("button_label");
-                button.setText(buttonText);
-            });
+            getRemoteConfigurationForButton();
         }
     }
 
-    private void logRemoteConfigValues(FirebaseRemoteConfig config) {
-        Bundle bundle = new Bundle();
-        for (Map.Entry<String, FirebaseRemoteConfigValue> entry : config.getAll().entrySet()) {
-            bundle.putString(entry.getKey(), entry.getValue().asString());
-        }
-        StoreApplication.logEvent("remote_config", bundle);
-
-        Bundle justOneParam = new Bundle();
-        justOneParam.putString("button_label", config.getString("button_label"));
-        StoreApplication.logEvent("remote_config_directly", justOneParam);
+    private void getRemoteConfigurationForButton() {
+        Button button = findViewById(R.id.checkout_btn);
+        FirebaseRemoteConfig config = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings props = new FirebaseRemoteConfigSettings.Builder().setMinimumFetchIntervalInSeconds(0).build();
+        config.setConfigSettingsAsync(props);
+        config.setDefaultsAsync(new HashMap<String, Object>(){{
+            put(RC_BUTTON_KEY, "default label");
+        }});
+        config.fetchAndActivate().addOnCompleteListener(task -> {
+            String buttonText = config.getString(RC_BUTTON_KEY);
+            button.setText(buttonText);
+        });
     }
-
 
     public void checkout(View v) {
         Cart cart = Cart.getInstance();
 
         //track conversion for purchase
-        logPurchase(cart.getSubTotal());
+        logPurchase(cart);
 
         cart.pay();
         Intent intent = new Intent(this, PaidActivity.class);
         startActivity(intent);
     }
 
-    // Track the conversion with the purchase subtotal
-    private void logPurchase(double subtotal) {
-        Bundle bundle = new Bundle();
-        bundle.putDouble(FirebaseAnalytics.Param.PRICE, subtotal);
-        bundle.putString(FirebaseAnalytics.Param.CURRENCY, "GBP");
-        StoreApplication.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+    private void logPurchase(Cart cart) {
+        for (int i = 0; i < cart.getNumOfUniqueProducts(); i++) {
+            String transactionId = UUID.randomUUID().toString();
+            Product product = cart.getProduct(i);
+            Bundle bundle = new Bundle();
+            bundle.putDouble(FirebaseAnalytics.Param.VALUE, product.price);
+            bundle.putString(FirebaseAnalytics.Param.CURRENCY, "USD");
+            bundle.putString(FirebaseAnalytics.Param.TRANSACTION_ID, transactionId);
+            StoreApplication.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+        }
+
     }
 
     public static void navigate(Activity activity) {
