@@ -55,10 +55,10 @@ class BuyTest {
         sleep(1000) // to make sure RemoteConfig is fetched
 
         val limit = when (getText(withId(R.id.checkout_btn))) {
-            "PAY PLEASE"            -> 0.6
-            "PROCEED TO CHECKOUT"   -> 0.7
-            "BUY"                   -> 0.8
-            else                    -> 0.9
+            "PAY PLEASE"            -> 0.7
+            "PROCEED TO CHECKOUT"   -> 0.8
+            "BUY"                   -> 0.9
+            else                    -> 0.6
         }
 
         if (Math.random() > limit) return
