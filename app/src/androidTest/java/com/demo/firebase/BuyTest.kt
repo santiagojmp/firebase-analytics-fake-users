@@ -3,6 +3,7 @@ package com.demo.firebase
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
@@ -37,28 +38,29 @@ class BuyTest {
     fun listGoesOverTheFold() {
         log("New test")
 
-        onView(withId(randomOf(R.id.seeall_just, R.id.seeall_new)))
-                .perform(click())
+        onView(withId(randomOf(R.id.seeall_just, R.id.seeall_new))).perform(click())
         if (Math.random() > 0.9) return
 
-        val itemToClick = (Math.random() * 4.0).toInt()
-        log("Clicking item $itemToClick")
-        onView(withId(R.id.section_product_list))
-                .perform(actionOnItemAtPosition<ProductHolder>(itemToClick, click()))
+        addRandomProductToCart()
         if (Math.random() > 0.7) return
 
-//        Espresso.pressBack()
-        onView(withText("ADD TO CART")).perform(click())
-        log("Added to cart")
+        if (Math.random() > 0.7) { // add another product to the cart
+            Espresso.pressBack()
+            Espresso.pressBack()
+            addRandomProductToCart()
+            sleep(2000)
+        }
+
+        if (Math.random() > 0.7) return
         onView(withText("View Cart")).perform(click())
 
-        sleep(1000) // to make sure RemoteConfig is fetched
+        sleep(100) // so RemoteConfig is fetched
 
         val limit = when (getText(withId(R.id.checkout_btn))) {
-            "PAY PLEASE"            -> 0.7
-            "PROCEED TO CHECKOUT"   -> 0.8
-            "BUY"                   -> 0.9
-            else                    -> 0.6
+            "PAY PLEASE"            -> 0.3
+            "PROCEED TO CHECKOUT"   -> 0.4
+            "BUY"                   -> 0.5
+            else                    -> 0.2
         }
 
         if (Math.random() > limit) return
@@ -66,6 +68,14 @@ class BuyTest {
         onView(withId(R.id.checkout_btn)).perform(click())
         onView(withText("CONTINUE SHOPPING")).check(matches(isDisplayed()))
 
+    }
+
+    private fun addRandomProductToCart() {
+        val itemToClick = (Math.random() * 4.0).toInt()
+        onView(withId(R.id.section_product_list))
+                .perform(actionOnItemAtPosition<ProductHolder>(itemToClick, click()))
+        onView(withText("ADD TO CART")).perform(click())
+        log("Added to cart")
     }
 
     private fun getText(matcher: Matcher<View>): String {
