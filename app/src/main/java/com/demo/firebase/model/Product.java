@@ -9,7 +9,7 @@ public class Product {
     public final String name;
     public final int imageId;
     public final double price;
-    final Category category;
+    public final Category category;
 
     public Product(int id, String name, Category category, double price,
                    int imageResourceId) {

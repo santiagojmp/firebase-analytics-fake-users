@@ -3,6 +3,7 @@ package com.demo.firebase.view;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,6 +17,8 @@ import com.demo.firebase.StoreApplication;
 import com.demo.firebase.model.Cart;
 import com.demo.firebase.model.Product;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.analytics.FirebaseAnalytics.Event;
+import com.google.firebase.analytics.FirebaseAnalytics.Param;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
@@ -73,16 +76,28 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void logPurchase(Cart cart) {
+        Parcelable[] items = new Parcelable[cart.getNumOfUniqueProducts()];
+        double totalValue = 0;
         for (int i = 0; i < cart.getNumOfUniqueProducts(); i++) {
-            String transactionId = UUID.randomUUID().toString();
             Product product = cart.getProduct(i);
-            Bundle bundle = new Bundle();
-            bundle.putDouble(FirebaseAnalytics.Param.VALUE, product.price);
-            bundle.putString(FirebaseAnalytics.Param.CURRENCY, "USD");
-            bundle.putString(FirebaseAnalytics.Param.TRANSACTION_ID, transactionId);
-            StoreApplication.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+            int quantity = cart.getQuantity(product);
+            totalValue = quantity * product.price;
+
+            Bundle item = new Bundle();
+            item.putString(Param.ITEM_ID, Double.toString(product.id));
+            item.putString(Param.ITEM_CATEGORY, product.category.toString());
+            item.putLong(Param.QUANTITY, quantity);
+            item.putDouble(Param.PRICE, product.price);
+            items[i] = item;
         }
 
+        String transactionId = UUID.randomUUID().toString();
+        Bundle purchaseParams = new Bundle();
+        purchaseParams.putString(Param.TRANSACTION_ID, transactionId);
+        purchaseParams.putString(Param.CURRENCY, "USD");
+        purchaseParams.putDouble(Param.VALUE, totalValue);
+        purchaseParams.putParcelableArray(Param.ITEMS, items);
+        StoreApplication.logEvent(Event.PURCHASE, purchaseParams);
     }
 
     public static void navigate(Activity activity) {
