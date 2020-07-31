@@ -20,6 +20,7 @@ import com.demo.firebase.model.Section;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.analytics.FirebaseAnalytics.Event;
 import com.google.firebase.analytics.FirebaseAnalytics.Param;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.Collection;
 
@@ -43,8 +44,10 @@ public class SectionActivity extends AppCompatActivity {
             Bundle bundle = new Bundle();
             bundle.putString(Param.ITEM_CATEGORY, section.title);
             StoreApplication.logEvent(Event.VIEW_ITEM_LIST, bundle);
+            FirebaseCrashlytics.getInstance().log("Entering category view of: " + section.title);
 
         } catch (IllegalArgumentException e) {
+            FirebaseCrashlytics.getInstance().log("Category which doesn't exist");
             showPageDoesNotExistDialog();
         }
     }

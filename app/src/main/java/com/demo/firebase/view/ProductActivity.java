@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.demo.firebase.R;
 import com.demo.firebase.StoreApplication;
+import com.demo.firebase.TestCheck;
 import com.demo.firebase.model.Cart;
 import com.demo.firebase.model.MockInventory;
 import com.demo.firebase.model.Product;
@@ -81,6 +82,7 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     public void addToCart(View v) {
+        throwRandomExceptionDuringTest();
         int quantity = Integer.parseInt(quantitySpinner.getSelectedItem().toString());
         Cart.getInstance().add(product, quantity);
 
@@ -106,5 +108,13 @@ public class ProductActivity extends AppCompatActivity {
         Intent intent = new Intent(activity, ProductActivity.class);
         intent.putExtra(PRODUCT_ID, productId);
         activity.startActivity(intent);
+    }
+
+    private void throwRandomExceptionDuringTest() {
+        if (TestCheck.isRunningTest()) {
+            if (Math.random() > 0.98) {
+                throw new NullPointerException();
+            }
+        }
     }
 }

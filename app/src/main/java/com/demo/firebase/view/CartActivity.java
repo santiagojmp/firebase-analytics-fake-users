@@ -14,11 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.firebase.R;
 import com.demo.firebase.StoreApplication;
+import com.demo.firebase.TestCheck;
 import com.demo.firebase.model.Cart;
 import com.demo.firebase.model.Product;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.analytics.FirebaseAnalytics.Event;
 import com.google.firebase.analytics.FirebaseAnalytics.Param;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
@@ -48,6 +49,8 @@ public class CartActivity extends AppCompatActivity {
 
             getRemoteConfigurationForButton();
         }
+        FirebaseCrashlytics.getInstance().setCustomKey("unique items in the cart", cart.getNumOfUniqueProducts());
+        FirebaseCrashlytics.getInstance().log("Entering cart view");
     }
 
     private void getRemoteConfigurationForButton() {
@@ -71,6 +74,7 @@ public class CartActivity extends AppCompatActivity {
         logPurchase(cart);
 
         cart.pay();
+        throwRandomExceptionDuringTest();
         Intent intent = new Intent(this, PaidActivity.class);
         startActivity(intent);
     }
@@ -98,10 +102,20 @@ public class CartActivity extends AppCompatActivity {
         purchaseParams.putDouble(Param.VALUE, totalValue);
         purchaseParams.putParcelableArray(Param.ITEMS, items);
         StoreApplication.logEvent(Event.PURCHASE, purchaseParams);
+
+        FirebaseCrashlytics.getInstance().setCustomKey("checkout value", totalValue);
     }
 
     public static void navigate(Activity activity) {
         Intent intent = new Intent(activity, CartActivity.class);
         activity.startActivity(intent);
+    }
+
+    private void throwRandomExceptionDuringTest() {
+        if (TestCheck.isRunningTest()) {
+            if (Math.random() > 0.98) {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 }
